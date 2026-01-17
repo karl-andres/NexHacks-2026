@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Video, Play, Square } from "lucide-react"
 import { useState, useEffect, useRef, useCallback } from "react"
 import Webcam from "react-webcam"
-import { vision, setOnResultCallback } from "@/app/overshoot/overshoot"
+import { vision, setOnResultCallback } from "@/overshoot/overshoot"
 
 interface VisionFeedProps {
   isCapturing: boolean
@@ -38,6 +38,7 @@ export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating }: Vis
     await vision.stop()
     setIsCapturing(false)
     setIsGenerating(true)
+    
 
     setTimeout(() => {
       setIsGenerating(false)
