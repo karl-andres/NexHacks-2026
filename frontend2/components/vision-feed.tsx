@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Video, Play, Square } from "lucide-react"
 import { useState, useEffect } from "react"
+import Webcam from "react-webcam"
 
 interface VisionFeedProps {
   isCapturing: boolean
@@ -65,35 +66,32 @@ export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating }: Vis
           </div>
         </div>
 
-        {/* Video Placeholder */}
+        {/* Webcam Feed */}
         <div className="flex-1 bg-black/40 relative overflow-hidden flex items-center justify-center border-b border-border">
+          <Webcam
+            audio={false}
+            mirrored
+            className="absolute inset-0 w-full h-full object-cover"
+            videoConstraints={{
+              facingMode: "user",
+            }}
+          />
+          {/* Grid overlay */}
           <div
-            className="absolute inset-0 opacity-10"
+            className="absolute inset-0 opacity-10 pointer-events-none"
             style={{
               backgroundImage:
                 "linear-gradient(90deg, transparent 1px, rgba(34, 211, 238, 0.1) 1px, transparent 2px), linear-gradient(transparent 1px, rgba(34, 211, 238, 0.1) 1px, transparent 2px)",
               backgroundSize: "50px 50px",
             }}
           />
-          <div className="relative z-10 text-center">
-            <div
-              className={`w-16 h-16 rounded-full border-2 flex items-center justify-center mx-auto mb-3 ${
-                isCapturing ? "border-red-500/50 animate-pulse" : "border-neon-cyan/30"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full border-2 ${
-                  isCapturing ? "border-red-500/70" : "border-neon-cyan/50"
-                }`}
-              />
+          {/* Recording indicator */}
+          {isCapturing && (
+            <div className="absolute top-3 right-3 flex items-center gap-2 bg-black/60 px-2 py-1 rounded">
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-xs text-white font-mono">REC</span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {isCapturing ? "Capturing..." : "Video stream from Overshoot API"}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {isCapturing ? "Processing input..." : "Waiting for input..."}
-            </p>
-          </div>
+          )}
         </div>
 
         {/* Live Description Log */}
