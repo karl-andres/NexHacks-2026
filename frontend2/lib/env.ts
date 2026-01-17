@@ -50,6 +50,7 @@ export const env = {
  */
 export const publicEnv = {
   // Add NEXT_PUBLIC_ variables here as needed
+  OVERSHOOT_API_KEY: getEnvVar('NEXT_PUBLIC_OVERSHOOT_API_KEY'),
   // Example: API_URL: process.env.NEXT_PUBLIC_API_URL ?? '',
 } as const
 

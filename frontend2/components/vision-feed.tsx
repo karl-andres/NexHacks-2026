@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Video, Play, Square } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import Webcam from "react-webcam"
+import { vision, setOnResultCallback } from "@/app/overshoot/overshoot"
 
 interface VisionFeedProps {
   isCapturing: boolean
@@ -16,40 +17,32 @@ interface VisionFeedProps {
 export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating }: VisionFeedProps) {
   const [liveDescriptions, setLiveDescriptions] = useState<string[]>(["Awaiting capture..."])
 
+  // Use ref to always have access to latest setter from async callbacks
+  const addDescription = useCallback((text: string) => {
+    console.log("Adding description to UI:", text)
+    setLiveDescriptions((prev) => [...prev, text])
+  }, [])
+
+  // Set up callback to receive vision results and update UI
   useEffect(() => {
-    if (!isCapturing) {
-      setLiveDescriptions(["Awaiting capture..."])
-      return
-    }
+    setOnResultCallback(addDescription)
+  }, [addDescription])
 
-    const mockDescriptions = [
-      "Detected: Cylinder, 50mm diameter, 120mm height",
-      "Material: Metal, brushed aluminum finish",
-      "Orientation: Vertical, centered in frame",
-      "Additional features: Threaded top, mounting points detected",
-      "Surface quality: Good, minimal wear",
-    ]
-
-    let index = 0
-    const interval = setInterval(() => {
-      if (index < mockDescriptions.length) {
-        setLiveDescriptions((prev) => [...prev, mockDescriptions[index]])
-        index++
-      }
-    }, 800)
-
-    return () => clearInterval(interval)
-  }, [isCapturing])
+  const handleStartCapture = async () => {
+    setLiveDescriptions(["Starting capture..."])
+    setIsCapturing(true)
+    await vision.start()
+  }
 
   const handleStopCapture = async () => {
+    await vision.stop()
     setIsCapturing(false)
     setIsGenerating(true)
 
     setTimeout(() => {
       setIsGenerating(false)
-      // Mock STL file response from backend
-      setLiveDescriptions((prev) => [...prev, "✓ STL file generated successfully"])
-    }, 2000)
+      setLiveDescriptions((prev) => [...prev, "✓ Capture complete"])
+    }, 1000)
   }
 
   return (
@@ -116,11 +109,10 @@ export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating }: Vis
       </Card>
 
       <Button
-        onClick={() => (isCapturing ? handleStopCapture() : setIsCapturing(true))}
+        onClick={() => (isCapturing ? handleStopCapture() : handleStartCapture())}
         className={`w-full ${
           isCapturing ? "bg-red-600 hover:bg-red-700 text-white" : "bg-neon-cyan hover:bg-neon-cyan/90 text-background"
         }`}
-        disabled={false}
       >
         {isCapturing ? (
           <>
