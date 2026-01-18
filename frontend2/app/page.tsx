@@ -23,10 +23,10 @@ export default function Home() {
             <Menu className="w-5 h-5 text-foreground" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-neon-cyan/20 border border-neon-cyan flex items-center justify-center">
+            {/* <div className="w-8 h-8 rounded-lg bg-neon-cyan/20 border border-neon-cyan flex items-center justify-center">
               <Zap className="w-5 h-5 text-neon-cyan" />
-            </div>
-            <h1 className="text-lg font-bold text-foreground tracking-tight">VisionSCAD</h1>
+            </div> */}
+            <h1 className="text-xl font-thin text-foreground tracking-tight">Akvik</h1>
           </div>
         </div>
 

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Video, Play, Square } from "lucide-react"
+import { Video, Play, Square, Send, Type } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 import Webcam from "react-webcam"
 import { vision, setOnResultCallback } from "@/overshoot/overshoot"
@@ -18,6 +18,8 @@ interface VisionFeedProps {
 
 export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating, onStlGenerated }: VisionFeedProps) {
   const [liveDescriptions, setLiveDescriptions] = useState<string[]>(["Awaiting capture..."])
+  const [textDescription, setTextDescription] = useState("")
+  const [isSubmittingText, setIsSubmittingText] = useState(false)
 
   // Use ref to always have access to latest setter from async callbacks
   const addDescription = useCallback((text: string) => {
@@ -51,6 +53,28 @@ export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating, onStl
       const message = error instanceof Error ? error.message : "Unknown error"
       setLiveDescriptions((prev) => [...prev, `✗ Error: ${message}`])
     } finally {
+      setIsGenerating(false)
+    }
+  }
+
+  const handleTextSubmit = async () => {
+    if (!textDescription.trim() || isSubmittingText) return
+
+    setIsSubmittingText(true)
+    setIsGenerating(true)
+    setLiveDescriptions((prev) => [...prev, `Generating from text: "${textDescription}"`])
+    setLiveDescriptions((prev) => [...prev, "Starting STL generation..."])
+
+    try {
+      const stlData = await generateSTL(textDescription)
+      onStlGenerated(stlData)
+      setLiveDescriptions((prev) => [...prev, "✓ STL generated successfully"])
+      setTextDescription("") // Clear input on success
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error"
+      setLiveDescriptions((prev) => [...prev, `✗ Error: ${message}`])
+    } finally {
+      setIsSubmittingText(false)
       setIsGenerating(false)
     }
   }
@@ -118,24 +142,59 @@ export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating, onStl
         </div>
       </Card>
 
-      <Button
-        onClick={() => (isCapturing ? handleStopCapture() : handleStartCapture())}
-        className={`w-full ${
-          isCapturing ? "bg-red-600 hover:bg-red-700 text-white" : "bg-neon-cyan hover:bg-neon-cyan/90 text-background"
-        }`}
-      >
-        {isCapturing ? (
-          <>
-            <Square className="w-4 h-4 mr-2" />
-            Stop Capture
-          </>
-        ) : (
-          <>
-            <Play className="w-4 h-4 mr-2" />
-            Start Capture
-          </>
-        )}
-      </Button>
+      {/* Action Buttons */}
+      <div className="flex flex-col gap-3">
+        {/* Webcam Capture Button */}
+        <Button
+          onClick={() => (isCapturing ? handleStopCapture() : handleStartCapture())}
+          disabled={isSubmittingText}
+          className={`w-full ${
+            isCapturing ? "bg-red-600 hover:bg-red-700 text-white" : "bg-neon-cyan hover:bg-neon-cyan/90 text-background"
+          }`}
+        >
+          {isCapturing ? (
+            <>
+              <Square className="w-4 h-4 mr-2" />
+              Stop Capture
+            </>
+          ) : (
+            <>
+              <Play className="w-4 h-4 mr-2" />
+              Start Capture
+            </>
+          )}
+        </Button>
+
+        {/* Divider */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+
+        {/* Text Description Input */}
+        <div className="flex gap-2">
+          <div className="flex-1 relative">
+            <Type className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={textDescription}
+              onChange={(e) => setTextDescription(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleTextSubmit()}
+              placeholder="Describe a 3D model..."
+              disabled={isCapturing || isSubmittingText}
+              className="w-full pl-10 pr-4 py-2 bg-secondary border border-border rounded-md text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-neon-cyan/50 focus:border-neon-cyan disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
+          <Button
+            onClick={handleTextSubmit}
+            disabled={!textDescription.trim() || isCapturing || isSubmittingText}
+            className="bg-neon-emerald hover:bg-neon-emerald/90 text-background"
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

@@ -1,14 +1,15 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Montserrat } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const _montserrat = Montserrat({ subsets: ["latin"]})
 
 export const metadata: Metadata = {
-  title: "VisionSCAD - AI Engineering Dashboard",
+  title: "Akvik",
   description: "High-tech engineering dashboard for AI-powered 3D model generation",
   generator: "v0.app",
   icons: {
@@ -37,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`font-sans antialiased bg-background text-foreground`}>
+      <body className={`${_montserrat.className} antialiased bg-background text-foreground`}>
         {children}
         <Analytics />
       </body>
