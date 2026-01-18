@@ -17,7 +17,7 @@ export function Canvas3D({ stlData, isGenerating }: Canvas3DProps) {
 
   // Load demo model on mount
   useEffect(() => {
-    fetch("/demo-model.stl")
+    fetch("/gaming_mouse.stl")
       .then((res) => res.arrayBuffer())
       .then(setDemoStlData)
       .catch(console.error)

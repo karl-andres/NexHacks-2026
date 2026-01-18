@@ -4,7 +4,10 @@ import { NextRequest, NextResponse } from "next/server"
  * POST /api/generate-stl
  *
  * Generates an STL file from a text description.
- * Proxies request to external STL generation service.
+ * Proxies request to Modal TRELLIS endpoint.
+ *
+ * Set STL_API_URL env var to your Modal endpoint:
+ * https://your-workspace--trellis-3d-generate-stl.modal.run
  */
 export async function POST(request: NextRequest) {
   try {
@@ -15,19 +18,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Description is required" }, { status: 400 })
     }
 
-    // TODO: Replace with actual STL generation service endpoint
-    const STL_API_URL = process.env.STL_API_URL || "http://localhost:8000/generate"
+    // Modal endpoint URL (after: modal deploy backend/trellis_modal.py)
+    const STL_API_URL = process.env.STL_API_URL
+
+    if (!STL_API_URL) {
+      return NextResponse.json(
+        { error: "STL_API_URL not configured. Deploy Modal app first." },
+        { status: 503 }
+      )
+    }
 
     const response = await fetch(STL_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Add API key if configured
-        ...(process.env.STL_API_KEY && {
-          Authorization: `Bearer ${process.env.STL_API_KEY}`,
-        }),
       },
-      body: JSON.stringify({ description }),
+      body: JSON.stringify({ description, format: "stl" }),
     })
 
     if (!response.ok) {
