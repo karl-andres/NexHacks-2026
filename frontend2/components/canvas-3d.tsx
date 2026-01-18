@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Download, Eye, EyeOff, Zap } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { STLViewer } from "./stl-viewer"
 
 interface Canvas3DProps {
@@ -13,6 +13,15 @@ interface Canvas3DProps {
 
 export function Canvas3D({ stlData, isGenerating }: Canvas3DProps) {
   const [showCode, setShowCode] = useState(false)
+  const [demoStlData, setDemoStlData] = useState<ArrayBuffer | null>(null)
+
+  // Load demo model on mount
+  useEffect(() => {
+    fetch("/demo-model.stl")
+      .then((res) => res.arrayBuffer())
+      .then(setDemoStlData)
+      .catch(console.error)
+  }, [])
 
   const mockOpenSCADCode = `// VisionSCAD Generated Model
 module cylinder_part() {
@@ -58,39 +67,24 @@ union() {
           <div className="flex-1 bg-black/60 relative overflow-hidden">
             {stlData ? (
               <STLViewer stlData={stlData} />
-            ) : (
+            ) : demoStlData && !isGenerating ? (
               <>
-                <div
-                  className="absolute inset-0 opacity-5"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(90deg, transparent 1px, rgba(34, 211, 238, 0.1) 1px, transparent 2px), linear-gradient(transparent 1px, rgba(34, 211, 238, 0.1) 1px, transparent 2px)",
-                    backgroundSize: "40px 40px",
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative z-10">
-                    <div
-                      className="w-32 h-32 border-2 border-neon-cyan/40 rounded-lg"
-                      style={{
-                        perspective: "1000px",
-                        transform: "rotateX(20deg) rotateZ(25deg)",
-                      }}
-                    >
-                      <div className="w-full h-full border border-neon-emerald/30 rounded flex items-center justify-center text-center">
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-2">
-                            {isGenerating ? "Generating..." : "3D Model Preview"}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {isGenerating ? "STL incoming" : "Start capture to generate"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <STLViewer stlData={demoStlData} />
+                <div className="absolute bottom-3 left-3 bg-black/70 px-2 py-1 rounded text-xs text-muted-foreground">
+                  Demo Model - Start capture to generate your own
                 </div>
               </>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {isGenerating ? "Generating STL..." : "Loading demo..."}
+                  </p>
+                  {isGenerating && (
+                    <div className="w-8 h-8 border-2 border-neon-cyan border-t-transparent rounded-full animate-spin mx-auto" />
+                  )}
+                </div>
+              </div>
             )}
           </div>
         ) : (
