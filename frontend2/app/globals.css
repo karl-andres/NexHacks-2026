@@ -132,3 +132,59 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .glass-panel {
+    background: rgba(10, 12, 22, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .neon-shadow {
+    box-shadow: 0 0 20px rgba(79, 209, 197, 0.15);
+  }
+
+  .neon-shadow-primary {
+    box-shadow: 0 0 20px rgba(43, 75, 238, 0.2);
+  }
+
+  .grid-bg {
+    background-size: 60px 60px;
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  }
+
+  .command-bar {
+    transform: translateY(calc(100% - 56px));
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .command-bar:hover,
+  .command-bar:focus-within {
+    transform: translateY(0);
+  }
+
+  .context-panel {
+    transform: translateX(calc(100% - 12px));
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .context-panel:hover {
+    transform: translateX(0);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

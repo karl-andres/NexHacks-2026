@@ -3,20 +3,22 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Video, Play, Square, Send, Type } from "lucide-react"
+import { Video, Play, Square, Send, Type, Maximize2, Settings } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 import Webcam from "react-webcam"
 import { vision, setOnResultCallback } from "@/overshoot/overshoot"
 import { generateSTL } from "@/lib/api"
+import { cn } from "@/lib/utils"
 
 interface VisionFeedProps {
   isCapturing: boolean
   setIsCapturing: (value: boolean) => void
   setIsGenerating: (value: boolean) => void
   onStlGenerated: (stlData: ArrayBuffer) => void
+  compact?: boolean
 }
 
-export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating, onStlGenerated }: VisionFeedProps) {
+export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating, onStlGenerated, compact = false }: VisionFeedProps) {
   const [liveDescriptions, setLiveDescriptions] = useState<string[]>(["Awaiting capture..."])
   const [textDescription, setTextDescription] = useState("")
   const [isSubmittingText, setIsSubmittingText] = useState(false)
@@ -79,6 +81,87 @@ export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating, onStl
     }
   }
 
+  // Compact mode for PiP display in side panel
+  if (compact) {
+    return (
+      <div className="space-y-3">
+        {/* Camera Feed PiP */}
+        <div className="relative group aspect-video rounded-xl overflow-hidden border border-white/10 bg-black/50">
+          {/* Live Badge */}
+          <div className="absolute top-2 left-2 z-10 flex gap-1.5">
+            <div className={cn(
+              "text-white text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-1",
+              isCapturing ? "bg-red-500" : "bg-neon-emerald/80"
+            )}>
+              <span className={cn("size-1 rounded-full", isCapturing ? "bg-white animate-pulse" : "bg-white")} />
+              {isCapturing ? "REC" : "LIVE"}
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="absolute top-2 right-2 z-10 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button className="p-1.5 bg-black/50 hover:bg-white/10 rounded-md text-white/70 hover:text-white transition-colors">
+              <Maximize2 className="w-3 h-3" />
+            </button>
+            <button className="p-1.5 bg-black/50 hover:bg-white/10 rounded-md text-white/70 hover:text-white transition-colors">
+              <Settings className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* Webcam */}
+          <Webcam
+            audio={false}
+            mirrored
+            className="w-full h-full object-cover"
+            videoConstraints={{
+              facingMode: "user",
+            }}
+          />
+
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+          {/* Bottom label */}
+          <div className="absolute inset-x-0 bottom-0 p-2 flex items-center justify-between">
+            <span className="text-[10px] font-medium text-white/60">Reference_Cam_01</span>
+          </div>
+        </div>
+
+        {/* Capture Button */}
+        <Button
+          onClick={() => (isCapturing ? handleStopCapture() : handleStartCapture())}
+          disabled={isSubmittingText}
+          className={cn(
+            "w-full py-2.5 text-xs font-bold tracking-widest transition-all",
+            isCapturing
+              ? "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500 hover:text-white"
+              : "bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white"
+          )}
+        >
+          {isCapturing ? (
+            <>
+              <Square className="w-3 h-3 mr-2" />
+              STOP CAPTURE
+            </>
+          ) : (
+            <>
+              <Play className="w-3 h-3 mr-2" />
+              START CAPTURE
+            </>
+          )}
+        </Button>
+
+        {/* Latest description */}
+        {liveDescriptions.length > 0 && (
+          <div className="text-[10px] text-white/40 font-mono truncate px-1">
+            {liveDescriptions[liveDescriptions.length - 1]}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Full mode
   return (
     <div className="flex flex-col gap-4 h-full">
       <Card className="bg-secondary border-border flex-1 flex flex-col overflow-hidden">
