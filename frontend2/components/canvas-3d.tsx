@@ -97,13 +97,22 @@ union() {
       </Card>
 
       <div className="flex gap-2">
-        <Button className="flex-1 bg-neon-emerald hover:bg-neon-emerald/90 text-background" disabled={isGenerating}>
-          <Zap className="w-4 h-4 mr-2" />
-          Generate 3D Model
-        </Button>
         <Button
-          className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground border border-border"
-          disabled={!stlData}
+          className="flex-1 bg-neon-emerald hover:bg-neon-emerald/90 text-background"
+          disabled={!stlData && !demoStlData}
+          onClick={() => {
+            const dataToDownload = stlData || demoStlData
+            if (!dataToDownload) return
+            const blob = new Blob([dataToDownload], { type: "application/octet-stream" })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement("a")
+            a.href = url
+            a.download = stlData ? "generated_model.stl" : "model.stl"
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+          }}
         >
           <Download className="w-4 h-4 mr-2" />
           Download STL
