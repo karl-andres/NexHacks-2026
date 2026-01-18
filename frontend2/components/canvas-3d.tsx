@@ -8,11 +8,10 @@ import { STLViewer } from "./stl-viewer"
 
 interface Canvas3DProps {
   stlData: ArrayBuffer | null
-  setStlData: (data: ArrayBuffer | null) => void
   isGenerating: boolean
 }
 
-export function Canvas3D({ stlData, setStlData, isGenerating }: Canvas3DProps) {
+export function Canvas3D({ stlData, isGenerating }: Canvas3DProps) {
   const [showCode, setShowCode] = useState(false)
 
   const mockOpenSCADCode = `// VisionSCAD Generated Model

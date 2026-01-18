@@ -4,17 +4,19 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Video, Play, Square } from "lucide-react"
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Webcam from "react-webcam"
 import { vision, setOnResultCallback } from "@/overshoot/overshoot"
+import { generateSTL } from "@/lib/api"
 
 interface VisionFeedProps {
   isCapturing: boolean
   setIsCapturing: (value: boolean) => void
   setIsGenerating: (value: boolean) => void
+  onStlGenerated: (stlData: ArrayBuffer) => void
 }
 
-export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating }: VisionFeedProps) {
+export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating, onStlGenerated }: VisionFeedProps) {
   const [liveDescriptions, setLiveDescriptions] = useState<string[]>(["Awaiting capture..."])
 
   // Use ref to always have access to latest setter from async callbacks
@@ -38,12 +40,19 @@ export function VisionFeed({ isCapturing, setIsCapturing, setIsGenerating }: Vis
     await vision.stop()
     setIsCapturing(false)
     setIsGenerating(true)
-    
+    setLiveDescriptions((prev) => [...prev, "Starting STL generation..."])
 
-    setTimeout(() => {
+    try {
+      const lastDescription = liveDescriptions[liveDescriptions.length - 1]
+      const stlData = await generateSTL(lastDescription)
+      onStlGenerated(stlData) // set the stl data to the parent component
+      setLiveDescriptions((prev) => [...prev, "✓ STL generated successfully"])
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error"
+      setLiveDescriptions((prev) => [...prev, `✗ Error: ${message}`])
+    } finally {
       setIsGenerating(false)
-      setLiveDescriptions((prev) => [...prev, "✓ Capture complete"])
-    }, 1000)
+    }
   }
 
   return (

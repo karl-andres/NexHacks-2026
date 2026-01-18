@@ -198,8 +198,8 @@ export const vision = new RealtimeVision({
   prompt: systemPrompt,
   source: { type: 'camera', cameraFacing: 'user' },
   processing: {
-    clip_length_seconds: 0.6,
-    delay_seconds: 2.7,
+    clip_length_seconds: 1,
+    delay_seconds: 1,
     fps: 35,
     sampling_ratio: 0.8
   },

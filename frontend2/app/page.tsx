@@ -42,11 +42,11 @@ export default function Home() {
       <div className="flex-1 overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 h-full overflow-hidden">
           <div className="min-h-0 overflow-hidden">
-            <VisionFeed isCapturing={isCapturing} setIsCapturing={setIsCapturing} setIsGenerating={setIsGenerating} />
+            <VisionFeed isCapturing={isCapturing} setIsCapturing={setIsCapturing} setIsGenerating={setIsGenerating} onStlGenerated={setStlData} />
           </div>
 
           <div className="min-h-0 overflow-hidden">
-            <Canvas3D stlData={stlData} setStlData={setStlData} isGenerating={isGenerating} />
+            <Canvas3D stlData={stlData} isGenerating={isGenerating} />
           </div>
         </div>
       </div>
